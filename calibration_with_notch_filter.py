@@ -477,7 +477,9 @@ def main():
         
         
         def produce_model_data(mode="full_sky_model", freqs=freq_range, times=times):
-            filter_name_here=filter_name[0:19]                                       
+            filter_name_here=filter_name  
+            if filter_name[0:5]=="Notch":
+                filter_name_here=filter_name[0:19]    
             hdm_gleam = io.HERAData(path_data+"Filtered_model_"+filter_name_here+"_gleam_vis_expanded_"+lst+"_"+spw+".uvh5")
             hdm_gleam.read(times=times, frequencies=freqs)
             model_data_gleam,_,_=hdm_gleam.build_datacontainers()

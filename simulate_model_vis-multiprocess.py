@@ -26,10 +26,10 @@ uvh5name = sorted(glob.glob(path_data2+"*sum.uvh5"), key=numerical_sort)
 N=250
 nside=64
 gleam_flux_min=.5
-spw_array=np.array(["low","high"])
-# lsts_center_array=np.array(["0h","1h","2h","3h"])
+spw_array=np.array(["mid", "high"])
+lsts_center_array=np.array(["0h","1h","2h","3h"])
 
-lsts_center_array=np.array(["3h"])
+# lsts_center_array=np.array(["3h"])
 
 for fr in range(len(spw_array)):
     spw=spw_array[fr]
@@ -42,6 +42,8 @@ for fr in range(len(spw_array)):
         freqs = uvd1.freq_array[np.where((uvd1.freq_array>50e6) & (uvd1.freq_array<75e6))] ## load 50MHz and above
         # freqs = uvd1.freq_array[150:152] ## load 50MHz and above
     # freqs = uvd1.freq_array[150:152] ## load 50MHz and above
+    if spw=="mid":
+        freqs = uvd1.freq_array[np.where((uvd1.freq_array>110e6) & (uvd1.freq_array<135e6))] ## load 50MHz and above
     print(len(freqs), freqs[0])
     
     

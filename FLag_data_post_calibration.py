@@ -164,7 +164,12 @@ def main():
                             
     
                 print(len(data_red_all_bls))
-                np.save(path_data+"red_flagged_"+mode+"_"+filter_name_2+"_"+lst+"_"+spw+"_"+str(ti)+".npy",data_red_all)
+                data_red_all_dic={}
+                bls_int=0
+                for k in data_red_all_bls:
+                    data_red_all_dic[k]=data_red_all[bls_int]
+                    bls_int+=1
+                np.save(path_data+"red_flagged_"+mode+"_"+filter_name_2+"_"+lst+"_"+spw+"_"+str(ti)+".npy",data_red_all_dic)
                 # np.save(path_data+"test_bls_red_flagged_data_"+str(ti)+".npy",data_red_all_bls)
     
     
