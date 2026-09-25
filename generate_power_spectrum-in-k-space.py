@@ -58,7 +58,7 @@ spw="low"
 uvd1 = UVData()
 uvd1.read("/net/sinatra/vault-ike/ntsikelelo/Data_H6C/Full_LST_gleam_model_final_"+lst+"_"+spw+".uvh5", read_data=False)
 freqs = uvd1.freq_array*1e-6    
-N=50
+N=30
 k_int=50
 
 hd = io.HERAData(uvh5name[0])
@@ -162,11 +162,11 @@ def cylindrical_power_spectra(vis_file="", N=25,kint=0):
             k_mag = np.sqrt(k_per**2+k_par**2)
             for i in range (len(k_mag)):
                 k_per=factor*bl_len_m
-                # if np.abs(bl_len_m-14)<2 or np.abs(bl_len_m-29)<2:
-                k_mag = np.sqrt(k_per**2+k_par**2)
-                all_k_d.append(k_mag[i])
-                all_ps_d.append(ps_un[i])
-     
+                if np.abs(bl_len_m-14)<2 or np.abs(bl_len_m-29)<2:
+                    k_mag = np.sqrt(k_per**2+k_par**2)
+                    all_k_d.append(k_mag[i])
+                    all_ps_d.append(ps_un[i])
+         
         
     all_k = np.array(all_k_d)
     all_ps = np.array(all_ps_d)
@@ -199,11 +199,13 @@ def cylindrical_power_spectra(vis_file="", N=25,kint=0):
 
 k_centers, Pk_ave=cylindrical_power_spectra(vis_file=path_data+"abs_calibrated_data_gleam_", N=N,kint=50)
 k_centers, Pk_ave_full=cylindrical_power_spectra(vis_file=path_data+"abs_calibrated_data_full_", N=N, kint=50)
-k_centers, Pk_ave_filter_notch=cylindrical_power_spectra(vis_file= path_data+"abs_calibrated_data_"+filter_name+"_gleam_", N=N, kint=50)
+k_centers, Pk_ave_filter_notch=cylindrical_power_spectra(vis_file= path_data+"abs_calibrated_data_"+filter_name_2+"_gleam_", N=N, kint=50)
+k_centers, Pk_ave_filter=cylindrical_power_spectra(vis_file= path_data+"abs_calibrated_data_"+filter_name+"_gleam_", N=N, kint=50)
 
 np.save("all_baseline_power_spectrum_cal_data_gleam.npy",  Pk_ave)
 np.save("all_baseline_power_spectrum_cal_data_full.npy",  Pk_ave_full)
-np.save("all_baseline_power_spectrum_cal_data_gleam_filter.npy",  Pk_ave_filter_notch)
+np.save("all_baseline_power_spectrum_cal_data_gleam_filter.npy",  Pk_ave_filter)
+np.save("all_baseline_power_spectrum_cal_data_gleam_filter_notch.npy",  Pk_ave_filter_notch)
 np.save("k_centers.npy", k_centers)
 print("done main lobe filter")
 

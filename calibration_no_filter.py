@@ -470,9 +470,9 @@ def main():
             
         sol, meta, overall_class, vissol_flags=redundant_calibration (data, redcal_class, overall_class, reds)  
         
-        np.save(path_data+"gains/gains_redcal_"+uvh5name[i][43:69]+".npy",sol.gains)
+        np.save(path_data+"gains/gains_redcal_"+uvh5name[i][43:69]+"_"+lsts_center+"_"+spw+".npy",sol.gains)
         chis_redcal=np.where(rfi_flags, np.nan, meta['chisq']['Jnn']).ravel()
-        np.save(path_data+"chisq/chisq_redcal_"+uvh5name[i][43:69]+".npy",chis_redcal)
+        np.save(path_data+"chisq/chisq_redcal_"+uvh5name[i][43:69]+"_"+lsts_center+"_"+spw+".npy",chis_redcal)
         hd.update(data=sol.vis)
         hd.write_uvh5(path_data+"redundant_cal_data_temp.uvh5", clobber=True)
         
@@ -563,13 +563,10 @@ def main():
             calibrated_data_filtered=copy.deepcopy(redcal_data)
             
             abscal_gains = abscal.post_redcal_abscal(model_data_modi, calibrated_data, noise_wgts, rc_flags, verbose=False, use_abs_amp_lincal=False)
-            total_gains_log_cal = abscal.merge_gains([gain_cal_pol, abscal_gains])
+            total_gains = abscal.merge_gains([gain_cal_pol, abscal_gains])
             calibrated_data_final = copy.deepcopy(data)
-            abscal.calibrate_in_place(calibrated_data_final, total_gains_log_cal)
+            abscal.calibrate_in_place(calibrated_data_final, total_gains)
 
-            print("perfoming lincal no filter")
-            abscal_gains_lincal = abscal.post_redcal_abscal(model_data_modi, calibrated_data, noise_wgts, rc_flags, verbose=False, use_abs_amp_logcal=False)
-            total_gains_lin_cal = abscal.merge_gains([total_gains_log_cal, abscal_gains_lincal])
             
             
             
@@ -580,7 +577,7 @@ def main():
                 residual_data_filtered[bl]=calibrated_data_filtered[bl]-model_data_modi[bl]
         
             
-            return calibrated_data_final,  total_gains_lin_cal, calibrated_data_filtered
+            return calibrated_data_final,  total_gains, calibrated_data_filtered
         
         redcal_gains={}
         for key in sol.gains:

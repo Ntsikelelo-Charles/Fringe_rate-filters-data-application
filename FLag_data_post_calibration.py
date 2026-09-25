@@ -149,7 +149,7 @@ def main():
                         poly = np.poly1d(coeffs)
                         x_fit=freqs
                         y_fit=poly(x_fit)
-                        sig=3
+                        sig=5
                         all_flags=[]
                         for bls in cal_data_dic: 
                             up=y_fit+sig*y_fit

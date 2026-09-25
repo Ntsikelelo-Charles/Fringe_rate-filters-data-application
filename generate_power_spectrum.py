@@ -48,9 +48,9 @@ reds = hc.redcal.get_pos_reds(antpos_d, include_autos=True)
 
 filter_name="Main_lobe_20_mHz"
 filter_name_2="Notch_filter_40_mHz_interpolated"
-filter_name_3="Notch_filter_80_mHz"
+# filter_name_3="Notch_filter_80_mHz"
 filter_name_4="Main_lobe_baseline_dependent"
-filter_name_5="Notch_filter_20_mHz"
+filter_name_5="Notch_filter_20_mHz_interpolated"
 lst="0h"
 spw="low"
 
@@ -81,7 +81,7 @@ uvd1 = UVData()
 uvd1.read("/net/sinatra/vault-ike/ntsikelelo/Data_H6C/Full_LST_gleam_model_final_"+lst+"_"+spw+".uvh5", read_data=False)
 freqs = uvd1.freq_array*1e-6    
 N=249
-baseline=29
+baseline=14
 hd = io.HERAData(uvh5name[0])
 hd.read()
 reds = redcal.get_reds(hd.data_antpos, pols=['nn'], pol_mode='1pol')
@@ -277,22 +277,63 @@ def extrac_cal_data(file_name=path_data+"abs_calibrated_data_full_", lst="0h", s
     
 
   
-    return kpar, np.array(cal_all_data)        
+    return kpar, np.array(cal_all_data)  
 
 
+def extrac_cal_data_post_RFI_filter(filter_name=filter_name_2, mode="gleam", lst="0h", spw="low", uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs):
 
-# kpar, cal_data_gleam_filter_notch=extrac_cal_data_post_RFI_filter(filter_name=filter_name_2, mode="gleam", lst="0h", spw="low", uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs)
-# kpar, cal_data_full_filter_notch=extrac_cal_data_post_RFI_filter(filter_name=filter_name_2, mode="full", lst="0h", spw="low", uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs)
-kpar, cal_data_gleam_filter_notch=extrac_cal_data(file_name=path_data+"abs_calibrated_data_"+filter_name+"_gleam_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
-kpar, cal_data_full_filter_notch=extrac_cal_data(file_name=path_data+"abs_calibrated_data_"+filter_name+"_full_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
-np.save("all_power_spectrum_cal_data_gleam_filter_notch_"+str(baseline)+".npy", cal_data_gleam_filter_notch)
-np.save("all_power_spectrum_cal_data_gleam_filter_notch_"+str(baseline)+".npy", cal_data_full_filter_notch)
+    k=0 
+    cal_all_data=[]
+    kpar=np.ones(freqs.shape)
+    for bl in bls_interest:
+        
+        for x in range(N):
+            ti=k+x
+                
+        
+                
+            cal_data1 = np.load(path_data+"red_flagged_"+mode+"_"+filter_name+"_0h_"+spw+"_"+str(ti)+".npy", allow_pickle=True).item()
+            cal_data2 = np.load(path_data+"red_flagged_"+mode+"_"+filter_name+"_1h_"+spw+"_"+str(ti)+".npy", allow_pickle=True).item()
+            cal_data3 = np.load(path_data+"red_flagged_"+mode+"_"+filter_name+"_2h_"+spw+"_"+str(ti)+".npy", allow_pickle=True).item()
+            cal_data4 = np.load(path_data+"red_flagged_"+mode+"_"+filter_name+"_3h_"+spw+"_"+str(ti)+".npy", allow_pickle=True).item()
+            if bl in cal_data1 and bl in cal_data2:
+                vis1=(filter_data(cal_data1[bl]))
+                vis2=(filter_data(cal_data2[bl]))
+                kpar, power_spectrum_cross_power=vis_perform_delay_trans(freqs=freqs, vis1=vis1, vis2=vis2)
+                cal_all_data.append(power_spectrum_cross_power)
+
+            if bl in cal_data3 and bl in cal_data4:  
+                vis3=(filter_data(cal_data3[bl]))
+                vis4=(filter_data(cal_data4[bl]))
+                kpar, power_spectrum_cross_power2=vis_perform_delay_trans(freqs=freqs, vis1=vis3, vis2=vis4)
+                cal_all_data.append(power_spectrum_cross_power2)
+
+                    
+                    
+                    
+                    
+    
+
+  
+    return kpar, np.array(cal_all_data)       
+
+
+kpar, cal_data_gleam_filter_notch_20mHz=extrac_cal_data_post_RFI_filter(filter_name=filter_name_5, mode="gleam", lst=lst, spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
+kpar, cal_data_full_filter_notch_20mHz=extrac_cal_data_post_RFI_filter(filter_name=filter_name_5, mode="full", lst=lst, spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
+np.save(path_data+"all_power_spectrum_cal_data_gleam_filter_notch_20mHz_"+str(baseline)+".npy", cal_data_gleam_filter_notch_20mHz)
+np.save(path_data+"all_power_spectrum_cal_data_gleam_filter_notch_20mHz_"+str(baseline)+".npy", cal_data_full_filter_notch_20mHz)
+print("done notch filter 20mHz")
+
+kpar, cal_data_gleam_filter_notch=extrac_cal_data_post_RFI_filter(filter_name=filter_name_2, mode="gleam", lst=lst, spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
+kpar, cal_data_full_filter_notch=extrac_cal_data_post_RFI_filter(filter_name=filter_name_2, mode="full", lst=lst, spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs)  
+np.save(path_data+"all_power_spectrum_cal_data_gleam_filter_notch_"+str(baseline)+".npy", cal_data_gleam_filter_notch)
+np.save(path_data+"all_power_spectrum_cal_data_gleam_filter_notch_"+str(baseline)+".npy", cal_data_full_filter_notch)
 print("done notch filter")
 
 kpar, cal_data_gleam=extrac_cal_data(file_name=path_data+"abs_calibrated_data_gleam_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs)
 kpar, cal_data_full=extrac_cal_data(file_name=path_data+"abs_calibrated_data_full_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs)
-np.save("all_power_spectrum_cal_data_full_"+str(baseline)+".npy", cal_data_full)
-np.save("all_power_spectrum_cal_data_gleam_"+str(baseline)+".npy", cal_data_gleam)
+np.save(path_data+"all_power_spectrum_cal_data_full_"+str(baseline)+".npy", cal_data_full)
+np.save(path_data+"all_power_spectrum_cal_data_gleam_"+str(baseline)+".npy", cal_data_gleam)
 np.save("kpar_values.npy",kpar)
 print("done no filter case")
 
@@ -300,7 +341,7 @@ print("done no filter case")
 kpar, cal_data_gleam_filter=extrac_cal_data(file_name=path_data+"abs_calibrated_data_"+filter_name+"_gleam_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
 kpar, cal_data_full_filter=extrac_cal_data(file_name=path_data+"abs_calibrated_data_"+filter_name+"_full_",lst=lst , spw=spw, uvh5name=uvh5name, N=N, bls_interest=bls, freqs=freqs) 
 
-np.save("all_power_spectrum_cal_data_gleam_filter_"+str(baseline)+".npy", cal_data_gleam_filter)
-np.save("all_power_spectrum_cal_data_full_filter_"+str(baseline)+".npy", cal_data_full_filter)
+np.save(path_data+"all_power_spectrum_cal_data_gleam_filter_"+str(baseline)+".npy", cal_data_gleam_filter)
+np.save(path_data+"all_power_spectrum_cal_data_full_filter_"+str(baseline)+".npy", cal_data_full_filter)
 print("done main lobe filter")
 
